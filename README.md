@@ -1,89 +1,63 @@
 # Zerto VPG Checker
 
-This project is designed to alert the cloud team when a percentage of a Zerto site's VPGs are down, if a site's total throughput is 0, or if the entire ZVM's throughput is 0. It is custom built for the Tonaquint team's infrastructure and only they have permission to use this code.
+This project is designed to send alerts to a specified email address(s) when an event resulting in the following happen:
+
+* The throughput for the entire ZVM is 0
+* The throughput for a specific site is 0
+* Enough VPGs are in a "down" state to surpass a threshold (default 90%)
+
+This is meant to suppliment other reporting methods and should not be soley used to determine the health of a ZVM.
 
 # Installation
 
-Begin by making a directory called 'Zerto-Alerts' and entering it.
+This repository is designed to be installed on a Windows machine. If you are interested in installing this monitor on Linux or Mac, please see the 'Zerto-VPG-Checker-Linux' repository in this same account.
+
+After everything has been installed, a new Windows service will be created under the name 'Zerto-Alerts'.
+
+## Pre-Requisites
+
+### ZVM Version
+
+This monitor will only work on Zerto ZVM version 10.0 or higher. If your ZVM is running on Windows, this will not work. Please upgrade your ZVM environment before proceeding with the installation. You can find the information necessary to do this on Zerto's support site.
+
+### Dependencies
+
+The following must be installed on the target machine before proceeding:
+
+* Python 3.10+
+* Powershell
+
+Please follow installation instructions for these before proceeding with installing this monitor. With the exception of these, the script automates downloading all other dependencies.
+
+### Keycloak
+
+Prior to installing this, you will need to create the needed credentials within Keycloak.
+To access Keycloak, go to https://your-zvm-ip/auth and input the administrator user/password that was created when the ZVM appliance was first created.
+
+Next, change the Realm in the top left to 'Zerto' and go to 'Clients'.
+
+![alt text](image.png)
+
+Create a client, and under 'Client ID' type 'zerto-api'.
+
+![alt text](image-1.png)
+
+Next, make sure that 'Client Authentication' and 'Authorization' are on, and 'Standard flow', 'Implicit flow', and 'Direct access grants' are all checked.
+
+![alt text](image-2.png)
+
+Leave the final page blank and click Save.
+
+Find and click on the client you just created and click on the Credentials tab.
+The client secret will be how the monitor connects to the ZVM's API. Please take note of this, and have it ready before you start the installation script.
+
+This process will need to be repeated for every ZVM that you want this monitor to connect to.
+
+
+### User Prompts
+
+Once the pre-requisites have been installed, you may run the installation script with the following command:
 
 ```
-cd
-mkdir Zerto-Alerts
-cd Zerto-Alerts
+powershell -ExecutionPolicy Bypass -File ./install.ps1
 ```
-
-Then run the following to download the monitor and make the installation and run scripts executable.
-
-```
-curl -LO https://github.com/DOGE28/Zerto-VPG-Checker/archive/refs/heads/main.zip
-unzip main.zip
-rm main.zip
-cd Zerto-VPG-Checker-main
-chmod +x install.sh
-chmod +x run.sh
-```
-
-> [!Note]
-> You may need to download unzip if the above script does not work. ```sudo apt install unzip```
-
-
-If you haven't run into any errors, you can then run:
-
-```
-./install.sh
-```
-
-This will install all needed dependencies. Once finished, you will need to input all necessary environment variables into the .env file.
-
-Below is the snippet of code that outlines which sites get monitored. They are grouped into production and infrastructure sites. Copy and paste which group you want into the bottom of alerts.py. The code for INF is already there and ready to go, so if you want production you will need to comment (#) INF out and make sure production is in.
-
-```
-###Production Threading
-sgu_prod_thread = threading.Thread(target=monitor, args=('sgu prod',))
-boi_prod_thread = threading.Thread(target=monitor, args=('boi prod',))
-fb_prod_thread = threading.Thread(target=monitor, args=('fb prod',))
-
-sgu_prod_thread.start()
-boi_prod_thread.start()
-fb_prod_thread.start()
-
-sgu_prod_thread.join()
-boi_prod_thread.join()
-fb_prod_thread.join()
-
-###Infrastructure Threading
-sgu_inf_thread = threading.Thread(target=monitor, args=('sgu inf',))
-boi_inf_thread = threading.Thread(target=monitor, args=('boi inf',))
-okc_inf_thread = threading.Thread(target=monitor, args=('okc inf',))
-
-sgu_inf_thread.start()
-boi_inf_thread.start()
-okc_inf_thread.start()
-
-sgu_inf_thread.join()
-boi_inf_thread.join()
-okc_inf_thread.start()
-```
-Take note of how the code is organized. First the 'threading.Thread...' class is called for each site, then '.start()' then '.join()'. If it isn't working please review this section and make sure that it is formatted correctly. Also check the .env file.
-
-# Systemd Commands
-
-The install script will get everything ready for the monitor to run continuously, even after restart. But the service still needs to be started initially right after you've finished getting environment variables and setting which sites you want to monitor.
-
-The below command will start the zerto-alerts service:
-
-```
-sudo systemctl start zerto-alerts
-```
-
-This command will check the status of the service and include important information from the most recent run of the monitor:
-
-```
-sudo sustemctl status zerto-alerts
-```
-
-Finally, to verify that the script is currently running, use the command:
-```
-sudo systemdctl status zerto-alerts.service
-```
-It should show the service as active and you will see the print statements of the script in the output.

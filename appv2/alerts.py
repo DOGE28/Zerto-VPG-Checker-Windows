@@ -7,11 +7,6 @@ import threading
 
 
 
-
-
-
-
-
 class Alerts():
 
     def __init__(self, location):
@@ -105,7 +100,7 @@ class SendEmails(Alerts):
 consecutive_problem_count = 0
 def monitor(location: str): #Creates a while loop function that can be called to run the monitoring logic indefinitely
     """
-    location: str | The site to monitor, possible values ['sgu prod', 'boi prod', 'fb prod', 'sgu inf', 'boi inf', 'okc inf']
+    location: str | The single site to monitor, possible values ['sgu prod', 'boi prod', 'fb prod', 'sgu inf', 'boi inf', 'okc inf']
     """
     global consecutive_problem_count
 
@@ -135,9 +130,23 @@ def monitor(location: str): #Creates a while loop function that can be called to
 
         time.sleep(600)
 
-# sgu_prod_thread = threading.Thread(target=monitor, args=('sgu prod',))
-# boi_prod_thread = threading.Thread(target=monitor, args=('boi prod',))
-# fb_prod_thread = threading.Thread(target=monitor, args=('fb prod',))
+
+location_info = {}
+with open('.locationinfo', 'r') as file:
+    for line in file:
+        if line.strip() and not line.startswith('#'):
+            key, value = line.strip().split('=')
+            location_info[key.strip()] = value.strip()
+
+
+
+
+
+
+
+sgu_prod_thread = threading.Thread(target=monitor, args=('sgu prod',))
+boi_prod_thread = threading.Thread(target=monitor, args=('boi prod',))
+fb_prod_thread = threading.Thread(target=monitor, args=('fb prod',))
 
 
 # sgu_prod_thread.start()
@@ -149,17 +158,17 @@ def monitor(location: str): #Creates a while loop function that can be called to
 # boi_prod_thread.join()
 # fb_prod_thread.join()
 
-sgu_inf_thread = threading.Thread(target=monitor, args=('sgu inf',))
-boi_inf_thread = threading.Thread(target=monitor, args=('boi inf',))
-okc_inf_thread = threading.Thread(target=monitor, args=('okc inf',))
+# sgu_inf_thread = threading.Thread(target=monitor, args=('sgu inf',))
+# boi_inf_thread = threading.Thread(target=monitor, args=('boi inf',))
+# okc_inf_thread = threading.Thread(target=monitor, args=('okc inf',))
 
-sgu_inf_thread.start()
-boi_inf_thread.start()
-okc_inf_thread.start()
+# sgu_inf_thread.start()
+# boi_inf_thread.start()
+# okc_inf_thread.start()
 
-sgu_inf_thread.join()
-boi_inf_thread.join()
-okc_inf_thread.start()
+# sgu_inf_thread.join()
+# boi_inf_thread.join()
+# okc_inf_thread.join()
 
 
 
