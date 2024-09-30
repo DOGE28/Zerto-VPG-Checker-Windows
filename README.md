@@ -36,15 +36,15 @@ To access Keycloak, go to https://your-zvm-ip/auth and input the administrator u
 
 Next, change the Realm in the top left to 'Zerto' and go to 'Clients'.
 
-![alt text](image.png)
+![alt text](Resources/image.png)
 
 Create a client, and under 'Client ID' type 'zerto-api'.
 
-![alt text](image-1.png)
+![alt text](Resources/image-1.png)
 
 Next, make sure that 'Client Authentication' and 'Authorization' are on, and 'Standard flow', 'Implicit flow', and 'Direct access grants' are all checked.
 
-![alt text](image-2.png)
+![alt text](Resources/image-2.png)
 
 Leave the final page blank and click Save.
 
@@ -56,8 +56,14 @@ This process will need to be repeated for every ZVM that you want this monitor t
 
 ### User Prompts
 
-Once the pre-requisites have been installed, you may run the installation script with the following command:
+Before installation, you will need to have the following ready:
+
+* The IP address(s) for the ZVMs you want to monitor
+* The associated Keycloak Secret for the 'zerto-api' for each ZVM 
+
+Once the pre-requisites have been installed, you may run the installation script with the following command in a powershell terminal:
 
 ```
 powershell -ExecutionPolicy Bypass -File ./install.ps1
 ```
+
